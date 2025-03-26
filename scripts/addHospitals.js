@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const Hospital = require("../backend/models/Hospital");
+const Hospital = require("../models/Hospital");
 const dotenv = require("dotenv");
 
 dotenv.config(); // Charger les variables d'environnement
