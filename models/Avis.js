@@ -1,9 +1,12 @@
 const mongoose = require("mongoose");
 
 const avisSchema = new mongoose.Schema({
-  hopital: { type: String, required: true }, // Vérifie que ce champ existe bien
-  note: { type: Number, required: true, min: 1, max: 5 },
-  commentaire: { type: String, required: true }
+    nom: { type: String, required: true },
+    email: { type: String, required: true },
+    type_avis: { type: String, required: true },
+    avis: { type: String, required: true },
+    note: { type: Number, required: true, min: 1, max: 5 },
+    document: { type: String }, // document est facultatif
 });
 
 const Avis = mongoose.model("Avis", avisSchema);

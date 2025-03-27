@@ -36,26 +36,23 @@ app.use("/api/users", userRoutes);
 // Route pour soumettre un avis
 app.post("/api/feedback", async (req, res) => {
   try {
-    const { nom, email, type_avis, avis, note, document } = req.body;
+      const { hopital, commentaire, note } = req.body;
 
-    if (!nom || !email || !type_avis || !avis || !note) {
-      return res.status(400).json({ message: "Tous les champs sont requis" });
-    }
+      if (!hopital || !commentaire || !note) {
+          return res.status(400).json({ message: "Les champs hopital, commentaire et note sont requis" });
+      }
 
-    const nouveauAvis = new Avis({
-      nom,
-      email,
-      type_avis,
-      avis,
-      note,
-      document,
-    });
+      const nouveauAvis = new Avis({
+          hopital,
+          commentaire,
+          note,
+      });
 
-    await nouveauAvis.save();
-    res.status(201).json({ success: true, message: "Avis soumis avec succès!" });
+      await nouveauAvis.save();
+      res.status(201).json({ success: true, message: "Avis soumis avec succès!" });
   } catch (error) {
-    console.error("Erreur lors de la soumission de l'avis:", error);
-    res.status(500).json({ message: "Erreur serveur lors de la soumission de l'avis", error: error.message });
+      console.error("Erreur lors de la soumission de l'avis:", error);
+      res.status(500).json({ message: "Erreur serveur lors de la soumission de l'avis", error: error.message });
   }
 });
 
