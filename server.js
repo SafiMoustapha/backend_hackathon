@@ -1,4 +1,4 @@
-require("dotenv").config(); // Charger les variables d'environnement en premier
+require("dotenv").config();
 
 const express = require("express");
 const mongoose = require("mongoose");
@@ -6,19 +6,18 @@ const cors = require("cors");
 
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const userRoutes = require("./routes/userRoutes");
+const Avis = require("./models/Avis"); // Le modèle pour les avis
 const Hopital = require("./models/Hospital");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 const MONGO_URI = process.env.MONGO_URI;
 
-// Vérification de la présence de l'URI MongoDB
 if (!MONGO_URI) {
   console.error("❌ Erreur: MONGO_URI n'est pas défini dans le fichier .env");
   process.exit(1);
 }
 
-// ✅ Connexion à MongoDB
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connexion à MongoDB réussie"))
   .catch((err) => {
@@ -26,39 +25,59 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-
-// ✅ Middlewares
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ Routes
+// Routes pour récupérer les hôpitaux
 app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/users", userRoutes);
 
-// ✅ Lancer le serveur
-app.listen(PORT, () => {
-  console.log(`🚀 Serveur en cours d'exécution sur http://localhost:${PORT}`);
-});
-
-app.get("/hopitaux", async (req, res) => {
+// Route pour soumettre un avis
+app.post("/api/feedback", async (req, res) => {
   try {
-    const count = await Hopital.countDocuments();
-    console.log(`Nombre d'hôpitaux dans la base : ${count}`);
+    const { nom, email, type_avis, avis, note, document } = req.body;
 
-    if (count === 0) {
-      return res.status(404).json({ message: "Aucun hôpital trouvé dans la base." });
+    if (!nom || !email || !type_avis || !avis || !note) {
+      return res.status(400).json({ message: "Tous les champs sont requis" });
     }
 
-    const hopitaux = await Hopital.find();
-    console.log("Données récupérées :", hopitaux);
-    res.json(hopitaux);
+    const nouveauAvis = new Avis({
+      nom,
+      email,
+      type_avis,
+      avis,
+      note,
+      document,
+    });
+
+    await nouveauAvis.save();
+    res.status(201).json({ success: true, message: "Avis soumis avec succès!" });
   } catch (error) {
-    console.error("Erreur serveur :", error);
+    console.error("Erreur lors de la soumission de l'avis:", error);
+    res.status(500).json({ message: "Erreur serveur lors de la soumission de l'avis", error: error.message });
+  }
+});
+
+// Route pour récupérer les hôpitaux selon la recherche
+app.get("/api/hospitals", async (req, res) => {
+  try {
+    const { search } = req.query;
+    const hopitaux = await Hopital.find({
+      name: { $regex: search, $options: 'i' } 
+    });
+
+    if (hopitaux.length === 0) {
+      return res.status(404).json({ message: "Aucun hôpital trouvé" });
+    }
+
+    res.json({ hospitals: hopitaux });
+  } catch (error) {
+    console.error("Erreur lors de la recherche des hôpitaux:", error);
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 });
 
-
-
-
+app.listen(PORT, () => {
+  console.log(`🚀 Serveur en cours d'exécution sur http://localhost:${PORT}`);
+});
