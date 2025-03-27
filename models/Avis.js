@@ -24,7 +24,8 @@ const avisSchema = new mongoose.Schema({
     hospitalId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'Hospital',
-        required: true
+        // Retirer cette ligne si tu veux rendre hospitalId optionnel
+        // required: true
     }    
 });
 

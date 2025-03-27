@@ -40,23 +40,41 @@ app.post('/api/feedback', (req, res) => {
 
 app.post("/api/feedback", async (req, res) => {
   try {
-      const { hopital, commentaire, note } = req.body;
+    const { nom, email, hopital, hospitalId, avis, type_avis, note } = req.body;
 
-      if (!hopital || !commentaire || !note) {
-          return res.status(400).json({ message: "Les champs hopital, commentaire et note sont requis" });
+    // Vérifier que l'hôpital a bien été choisi
+    if (!hopital || hopital.trim() === '') {
+      return res.status(400).json({ message: "Veuillez sélectionner un hôpital valide !" });
+    }
+
+    // Si hospitalId est fourni, vérifier qu'il correspond à un hôpital existant
+    if (hospitalId) {
+      const hospital = await Hopital.findById(hospitalId);
+      if (!hospital) {
+        return res.status(400).json({ message: "L'hôpital sélectionné n'existe pas." });
       }
+    }
 
-      const nouveauAvis = new Avis({
-          hopital,
-          commentaire,
-          note,
-      });
+    // Vérifier les autres champs obligatoires
+    if (!avis || !note || !type_avis) {
+      return res.status(400).json({ message: "Les champs avis, type_avis et note sont obligatoires." });
+    }
 
-      await nouveauAvis.save();
-      res.status(201).json({ success: true, message: "Avis soumis avec succès!" });
+    const nouveauAvis = new Avis({
+      nom,
+      email,
+      hopital,
+      hospitalId,  // hospitalId est maintenant optionnel
+      avis,
+      type_avis,
+      note,
+    });
+
+    await nouveauAvis.save();
+    res.status(201).json({ success: true, message: "Avis soumis avec succès!" });
   } catch (error) {
-      console.error("Erreur lors de la soumission de l'avis:", error);
-      res.status(500).json({ message: "Erreur serveur lors de la soumission de l'avis", error: error.message });
+    console.error("Erreur lors de la soumission de l'avis:", error);
+    res.status(500).json({ message: "Erreur serveur lors de la soumission de l'avis", error: error.message });
   }
 });
 
