@@ -34,6 +34,10 @@ app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/users", userRoutes);
 
 // Route pour soumettre un avis
+app.post('/api/feedback', (req, res) => {
+  console.log("Données reçues par le backend:", req.body);
+});
+
 app.post("/api/feedback", async (req, res) => {
   try {
       const { hopital, commentaire, note } = req.body;

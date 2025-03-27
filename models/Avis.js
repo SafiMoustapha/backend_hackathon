@@ -20,7 +20,12 @@ const avisSchema = new mongoose.Schema({
     hopital: {
         type: String,
         required: true
-    }
+    },
+    hospitalId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Hospital',
+        required: true
+    }    
 });
 
 
