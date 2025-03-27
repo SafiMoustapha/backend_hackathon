@@ -20,5 +20,14 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "devDependencies": {},
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SafiMoustapha/backend_hackathon.git"
+  },
+  "bugs": {
+    "url": "https://github.com/SafiMoustapha/backend_hackathon/issues"
+  },
+  "homepage": "https://github.com/SafiMoustapha/backend_hackathon#readme",
   "description": ""
 }
