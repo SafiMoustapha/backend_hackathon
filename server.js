@@ -82,9 +82,11 @@ app.post("/api/feedback", async (req, res) => {
 app.get("/api/hospitals", async (req, res) => {
   try {
     const { search } = req.query;
+
+    // Recherche d'hôpitaux dont le nom correspond à la recherche
     const hopitaux = await Hopital.find({
-      name: { $regex: search, $options: 'i' } 
-    });
+      name: { $regex: search, $options: 'i' } // Recherche insensible à la casse
+    }).select('_id name');  // Sélectionne uniquement l'ID et le nom de l'hôpital
 
     if (hopitaux.length === 0) {
       return res.status(404).json({ message: "Aucun hôpital trouvé" });
@@ -96,6 +98,7 @@ app.get("/api/hospitals", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 });
+
 
 app.listen(PORT, () => {
   console.log(`🚀 Serveur en cours d'exécution sur http://localhost:${PORT}`);
