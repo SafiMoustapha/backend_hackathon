@@ -103,13 +103,11 @@ app.post("/api/feedback", upload.single('document'), async (req, res) => {
 app.get("/api/hospitals", async (req, res) => {
   try {
     const { search } = req.query;
-    console.log("Recherche envoyée par le frontend:", search); // Log pour voir ce que le frontend envoie
 
+    // Recherche d'hôpitaux dont le nom correspond à la recherche
     const hopitaux = await Hopital.find({
-      name: { $regex: search, $options: "i" },
-    }).select("_id name");
-
-    console.log("Hôpitaux trouvés:", hopitaux); // Log pour voir ce que la base de données renvoie
+      name: { $regex: search, $options: 'i' } // Recherche insensible à la casse
+    }).select('_id name');  // Sélectionne uniquement l'ID et le nom de l'hôpital
 
     if (hopitaux.length === 0) {
       return res.status(404).json({ message: "Aucun hôpital trouvé" });
@@ -121,7 +119,6 @@ app.get("/api/hospitals", async (req, res) => {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
 });
-
 
 // Démarrage du serveur
 app.listen(PORT, () => {
