@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const cors = require("cors");
 const multer = require('multer');
 
+// Importation des routes et modèles
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const userRoutes = require("./routes/userRoutes");
 const Avis = require("./models/Avis"); // Le modèle pour les avis
@@ -19,6 +20,7 @@ if (!MONGO_URI) {
   process.exit(1);
 }
 
+// Connexion à MongoDB
 mongoose.connect(MONGO_URI)
   .then(() => console.log("✅ Connexion à MongoDB réussie"))
   .catch((err) => {
@@ -26,34 +28,32 @@ mongoose.connect(MONGO_URI)
     process.exit(1);
   });
 
-  app.use(cors({
-    origin: "*",  // ou une URL spécifique pour autoriser uniquement ton frontend
-  }));
+// Middleware pour autoriser CORS
+app.use(cors({
+  origin: "*",  // ou une URL spécifique pour autoriser uniquement ton frontend
+}));
+
+// Middleware pour traiter les données JSON et les formulaires URL-encodés
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Routes pour récupérer les hôpitaux
+// Routes pour les hôpitaux et les utilisateurs
 app.use("/api/hospitals", hospitalRoutes);
 app.use("/api/users", userRoutes);
 
-// Route pour soumettre un avis
-app.post('/api/feedback', (req, res) => {
-  console.log("Données reçues par le backend:", req.body);
-});
-
-// Configuration de multer pour stocker les fichiers téléchargés
+// Configuration de multer pour l'upload des fichiers
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-      cb(null, 'uploads/');
+    cb(null, 'uploads/');  // Dossier de destination pour les fichiers
   },
   filename: (req, file, cb) => {
-      cb(null, Date.now() + '-' + file.originalname);
+    cb(null, Date.now() + '-' + file.originalname);  // Nom du fichier
   }
 });
 
 const upload = multer({ storage: storage });
 
-// Route pour soumettre l'avis
+// Route pour soumettre un avis
 app.post("/api/feedback", upload.single('document'), async (req, res) => {
   try {
     const { nom, email, hopital, hospitalId, avis, type_avis, note } = req.body;
@@ -92,7 +92,7 @@ app.post("/api/feedback", upload.single('document'), async (req, res) => {
     await nouveauAvis.save();
 
     // Retourner une réponse de succès
-    res.status(201).json({ success: true, message: "Avis soumis avec succès!" });
+    res.status(201).json({ success: true, message: "Avis soumis avec succès !" });
   } catch (error) {
     console.error("Erreur lors de la soumission de l'avis:", error);
     res.status(500).json({ message: "Erreur serveur lors de la soumission de l'avis", error: error.message });
@@ -120,7 +120,7 @@ app.get("/api/hospitals", async (req, res) => {
   }
 });
 
-
+// Démarrage du serveur
 app.listen(PORT, () => {
   console.log(`🚀 Serveur en cours d'exécution sur http://localhost:${PORT}`);
 });
