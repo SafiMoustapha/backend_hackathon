@@ -3,6 +3,7 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const cors = require("cors");
+const multer = require('multer');
 
 const hospitalRoutes = require("./routes/hospitalRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -38,11 +39,24 @@ app.post('/api/feedback', (req, res) => {
   console.log("Données reçues par le backend:", req.body);
 });
 
-app.post("/api/feedback", async (req, res) => {
+// Configuration de multer pour stocker les fichiers téléchargés
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+      cb(null, 'uploads/');
+  },
+  filename: (req, file, cb) => {
+      cb(null, Date.now() + '-' + file.originalname);
+  }
+});
+
+const upload = multer({ storage: storage });
+
+// Route pour soumettre l'avis
+app.post("/api/feedback", upload.single('document'), async (req, res) => {
   try {
     const { nom, email, hopital, hospitalId, avis, type_avis, note } = req.body;
 
-    // Vérifier que l'hôpital a bien été choisi
+    // Vérification que l'hôpital a bien été choisi
     if (!hopital || hopital.trim() === '') {
       return res.status(400).json({ message: "Veuillez sélectionner un hôpital valide !" });
     }
@@ -55,11 +69,12 @@ app.post("/api/feedback", async (req, res) => {
       }
     }
 
-    // Vérifier les autres champs obligatoires
+    // Vérification des autres champs obligatoires
     if (!avis || !note || !type_avis) {
       return res.status(400).json({ message: "Les champs avis, type_avis et note sont obligatoires." });
     }
 
+    // Créer un nouvel avis
     const nouveauAvis = new Avis({
       nom,
       email,
@@ -68,9 +83,13 @@ app.post("/api/feedback", async (req, res) => {
       avis,
       type_avis,
       note,
+      document: req.file ? req.file.path : null  // Si un fichier est téléchargé, ajouter le chemin
     });
 
+    // Sauvegarder l'avis dans la base de données
     await nouveauAvis.save();
+
+    // Retourner une réponse de succès
     res.status(201).json({ success: true, message: "Avis soumis avec succès!" });
   } catch (error) {
     console.error("Erreur lors de la soumission de l'avis:", error);
